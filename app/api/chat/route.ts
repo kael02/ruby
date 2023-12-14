@@ -2,7 +2,7 @@ import { kv } from '@vercel/kv'
 import { OpenAIStream, StreamingTextResponse } from 'ai'
 import OpenAI from 'openai'
 
-import { auth } from '@/auth'
+import { supabaseClient } from '@/lib/supabase'
 import { nanoid } from '@/lib/utils'
 
 export const runtime = 'edge'
@@ -14,8 +14,9 @@ const openai = new OpenAI({
 export async function POST(req: Request) {
   const json = await req.json()
   const { messages, previewToken } = json
-  const userId = (await auth())?.user.id
+  // const userId = (await auth())?.user.id
 
+  const userId = await (await supabaseClient.auth.getUser()).data.user?.id;
   if (!userId) {
     return new Response('Unauthorized', {
       status: 401
@@ -27,7 +28,7 @@ export async function POST(req: Request) {
   }
 
   const res = await openai.chat.completions.create({
-    model: 'gpt-3.5-turbo',
+    model: 'gpt-4-1106-preview',
     messages,
     temperature: 0.7,
     stream: true

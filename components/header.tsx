@@ -1,34 +1,40 @@
-import * as React from 'react'
 import Link from 'next/link'
+import * as React from 'react'
 
-import { cn } from '@/lib/utils'
-import { auth } from '@/auth'
-import { clearChats } from '@/app/actions'
 import { Button, buttonVariants } from '@/components/ui/button'
-import { Sidebar } from '@/components/sidebar'
-import { SidebarList } from '@/components/sidebar-list'
 import {
   IconGitHub,
   IconNextChat,
   IconSeparator,
   IconVercel
 } from '@/components/ui/icons'
-import { SidebarFooter } from '@/components/sidebar-footer'
-import { ThemeToggle } from '@/components/theme-toggle'
-import { ClearHistory } from '@/components/clear-history'
 import { UserMenu } from '@/components/user-menu'
+import { supabaseClient } from '@/lib/supabase'
+import { cn } from '@/lib/utils'
+import { ChatHistory } from './chat-history'
 import { SidebarMobile } from './sidebar-mobile'
 import { SidebarToggle } from './sidebar-toggle'
-import { ChatHistory } from './chat-history'
 
 async function UserOrLogin() {
-  const session = await auth()
+  const session = await supabaseClient.auth.getSession();
+  const user = session.data.session?.user;
+
+  console.log('currentUser', user);
+
+  const signIn = async () => {
+    await supabaseClient.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: 'http://192.168.156.128:3000/api/auth/callback'
+      }
+    })
+  }
   return (
     <>
-      {session?.user ? (
+      {user ? (
         <>
           <SidebarMobile>
-            <ChatHistory userId={session.user.id} />
+            <ChatHistory userId={user.id} />
           </SidebarMobile>
           <SidebarToggle />
         </>
@@ -40,11 +46,11 @@ async function UserOrLogin() {
       )}
       <div className="flex items-center">
         <IconSeparator className="w-6 h-6 text-muted-foreground/50" />
-        {session?.user ? (
-          <UserMenu user={session.user} />
+        {user ? (
+          <UserMenu user={user} />
         ) : (
-          <Button variant="link" asChild className="-ml-2">
-            <Link href="/sign-in?callbackUrl=/">Login</Link>
+          <Button onClick={signIn} variant="link" asChild className="-ml-2">
+              Login
           </Button>
         )}
       </div>
