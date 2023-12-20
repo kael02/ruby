@@ -1,7 +1,13 @@
 /** @type {import('tailwindcss').Config} */
+import { nextui } from '@nextui-org/react';
+
 module.exports = {
   darkMode: ['class'],
-  content: ['app/**/*.{ts,tsx}', 'components/**/*.{ts,tsx}'],
+  content: [
+    'app/**/*.{ts,tsx}',
+    'components/**/*.{ts,tsx}',
+    './node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}'
+  ],
   theme: {
     container: {
       center: true,
@@ -91,5 +97,9 @@ module.exports = {
       }
     }
   },
-  plugins: [require('tailwindcss-animate'), require('@tailwindcss/typography')]
-}
+  plugins: [
+    require('tailwindcss-animate'),
+    require('@tailwindcss/typography'),
+    nextui()
+  ]
+};

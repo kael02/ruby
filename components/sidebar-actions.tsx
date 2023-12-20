@@ -1,10 +1,10 @@
-'use client'
+'use client';
 
-import { useRouter } from 'next/navigation'
-import * as React from 'react'
-import { toast } from 'react-hot-toast'
+import { useRouter } from 'next/navigation';
+import * as React from 'react';
+import { toast } from 'react-hot-toast';
 
-import { ServerActionResult, type Chat } from '@/lib/types'
+import { ChatShareDialog } from '@/components/chat-share-dialog';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,20 +14,20 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle
-} from '@/components/ui/alert-dialog'
-import { Button } from '@/components/ui/button'
-import { IconShare, IconSpinner, IconTrash } from '@/components/ui/icons'
-import { ChatShareDialog } from '@/components/chat-share-dialog'
+} from '@/components/ui/alert-dialog';
+import { Button } from '@/components/ui/button';
+import { IconShare, IconSpinner, IconTrash } from '@/components/ui/icons';
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger
-} from '@/components/ui/tooltip'
+} from '@/components/ui/tooltip';
+import { ServerActionResult, type Chat } from '@/lib/types';
 
 interface SidebarActionsProps {
-  chat: Chat
-  removeChat: (args: { id: string; path: string }) => ServerActionResult<void>
-  shareChat: (id: string) => ServerActionResult<Chat>
+  chat: Chat;
+  removeChat: (id: string) => ServerActionResult<void>;
+  shareChat: (id: string) => ServerActionResult<Chat>;
 }
 
 export function SidebarActions({
@@ -35,23 +35,23 @@ export function SidebarActions({
   removeChat,
   shareChat
 }: SidebarActionsProps) {
-  const router = useRouter()
-  const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false)
-  const [shareDialogOpen, setShareDialogOpen] = React.useState(false)
-  const [isRemovePending, startRemoveTransition] = React.useTransition()
+  const router = useRouter();
+  const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
+  const [shareDialogOpen, setShareDialogOpen] = React.useState(false);
+  const [isRemovePending, startRemoveTransition] = React.useTransition();
 
   return (
     <>
-      <div className="space-x-1">
+      <div className='space-x-1'>
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
-              variant="ghost"
-              className="w-6 h-6 p-0 hover:bg-background"
+              variant='ghost'
+              className='w-6 h-6 p-0 hover:bg-background'
               onClick={() => setShareDialogOpen(true)}
             >
               <IconShare />
-              <span className="sr-only">Share</span>
+              <span className='sr-only'>Share</span>
             </Button>
           </TooltipTrigger>
           <TooltipContent>Share chat</TooltipContent>
@@ -59,13 +59,13 @@ export function SidebarActions({
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
-              variant="ghost"
-              className="w-6 h-6 p-0 hover:bg-background"
+              variant='ghost'
+              className='w-6 h-6 p-0 hover:bg-background'
               disabled={isRemovePending}
               onClick={() => setDeleteDialogOpen(true)}
             >
               <IconTrash />
-              <span className="sr-only">Delete</span>
+              <span className='sr-only'>Delete</span>
             </Button>
           </TooltipTrigger>
           <TooltipContent>Delete chat</TooltipContent>
@@ -93,33 +93,30 @@ export function SidebarActions({
             </AlertDialogCancel>
             <AlertDialogAction
               disabled={isRemovePending}
-              onClick={event => {
-                event.preventDefault()
+              onClick={(event) => {
+                event.preventDefault();
                 // @ts-ignore
                 startRemoveTransition(async () => {
-                  const result = await removeChat({
-                    id: chat.id,
-                    path: chat.path
-                  })
+                  const result = await removeChat(chat.id);
 
                   if (result && 'error' in result) {
-                    toast.error(result.error)
-                    return
+                    toast.error(result.error);
+                    return;
                   }
 
-                  setDeleteDialogOpen(false)
-                  router.refresh()
-                  router.push('/')
-                  toast.success('Chat deleted')
-                })
+                  setDeleteDialogOpen(false);
+                  router.refresh();
+                  router.push('/');
+                  toast.success('Chat deleted');
+                });
               }}
             >
-              {isRemovePending && <IconSpinner className="mr-2 animate-spin" />}
+              {isRemovePending && <IconSpinner className='mr-2 animate-spin' />}
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </>
-  )
+  );
 }

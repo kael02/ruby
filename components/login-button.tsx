@@ -1,15 +1,16 @@
-'use client'
+'use client';
 
-import * as React from 'react'
+import * as React from 'react';
 
-import { Button, type ButtonProps } from '@/components/ui/button'
-import { IconGitHub, IconSpinner } from '@/components/ui/icons'
-import { supabaseClient } from '@/lib/supabase'
-import { cn } from '@/lib/utils'
+import { Button, type ButtonProps } from '@/components/ui/button';
+import { IconGitHub, IconSpinner } from '@/components/ui/icons';
+import { cn } from '@/lib/utils';
+import { cookies } from 'next/headers';
+import { createClient } from '@/lib/supabase-client';
 
 interface LoginButtonProps extends ButtonProps {
-  showGithubIcon?: boolean
-  text?: string
+  showGithubIcon?: boolean;
+  text?: string;
 }
 
 export function LoginButton({
@@ -19,35 +20,35 @@ export function LoginButton({
   ...props
 }: LoginButtonProps) {
   const [isLoading, setIsLoading] = React.useState(false);
-
+  const supabase = createClient();
   const signIn = async () => {
-    await supabaseClient.auth.signInWithOAuth({
+    await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: 'http://192.168.156.128:3000/api/auth/callback'
+        redirectTo: 'http://localhost:3000/api/auth/callback'
       }
-    })
-  }
+    });
+  };
 
   return (
     <Button
-      variant="outline"
+      variant='outline'
       onClick={() => {
-        setIsLoading(true)
+        setIsLoading(true);
+        signIn();
         // next-auth signIn() function doesn't work yet at Edge Runtime due to usage of BroadcastChannel
         // signIn('github', { callbackUrl: `/` })
-        
       }}
       disabled={isLoading}
       className={cn(className)}
       {...props}
     >
       {isLoading ? (
-        <IconSpinner className="mr-2 animate-spin" />
+        <IconSpinner className='mr-2 animate-spin' />
       ) : showGithubIcon ? (
-        <IconGitHub className="mr-2" />
+        <IconGitHub className='mr-2' />
       ) : null}
       {text}
     </Button>
-  )
+  );
 }

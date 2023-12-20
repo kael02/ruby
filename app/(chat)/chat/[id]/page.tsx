@@ -1,50 +1,60 @@
-import { type Metadata } from 'next'
-import { notFound, redirect } from 'next/navigation'
+import { type Metadata } from 'next';
+import { notFound, redirect } from 'next/navigation';
 
-// import { auth } from '@/auth'
-import { getChat } from '@/app/actions'
-import { Chat } from '@/components/chat'
-import { supabaseClient } from '@/lib/supabase'
+import { getChat } from '@/app/actions';
+import { Chat } from '@/components/chat';
+import { createClient } from '@/lib/supabase-server';
+import { cookies } from 'next/headers';
 
 export interface ChatPageProps {
   params: {
-    id: string
-  }
+    id: string;
+  };
 }
 
 export async function generateMetadata({
   params
 }: ChatPageProps): Promise<Metadata> {
-  const session = await supabaseClient.auth.getSession();
+  const cookieStore = cookies();
+  const supabase = createClient(cookieStore);
+
+  const session = await supabase.auth.getSession();
+
   const user = session.data.session?.user;
+
   if (!user) {
-    return {}
+    return {};
   }
 
-  const chat = await getChat(params.id, user.id)
+  const chat = await getChat(params.id, user.id);
   return {
     title: chat?.title.toString().slice(0, 50) ?? 'Chat'
-  }
+  };
 }
 
 export default async function ChatPage({ params }: ChatPageProps) {
-  const session = await supabaseClient.auth.getSession();
+  const cookieStore = cookies();
+  const supabase = createClient(cookieStore);
+
+  const session = await supabase.auth.getSession();
 
   const user = session.data.session?.user;
 
   if (!user) {
-    redirect(`/sign-in?next=/chat/${params.id}`)
+    redirect(`/sign-in?next=/chat/${params.id}`);
   }
 
-  const chat = await getChat(params.id, user.id)
+  console.log('render ChatPage');
+
+  const chat = await getChat(params.id, user.id);
 
   if (!chat) {
-    notFound()
+    notFound();
   }
 
   if (chat?.userId !== user.id) {
-    notFound()
+    notFound();
   }
 
-  return <Chat id={chat.id} initialMessages={chat.messages} />
+  return <Chat id={chat.id} initialMessages={chat.messages} />;
 }
